@@ -50,28 +50,25 @@ class jumper(pygame.sprite.Sprite):
 		self.Spring = -5
 		self.Gravity = -5
 		self.JumpHeight = 50
+		self.Status = "falling"
 		self.rect = pygame.Rect(self.Image.get_rect()) #rectangle wrapper for collision detention
 		self.update()
+
+
+	def onFloor(self):
+		if self.rect.bottom >= grass1.rect.top: #check if rectangles are touching
+			self.Status = "jumping"
 	
 	def jump(self):
-		if self.rect.bottom >= grass1.rect.top: #or collide (self, grass2):
+		onFloor() #check if the character is on the floor
+		if self.Status == "jumping":
 			self.AllowJump = self.JumpHeight
-
-	def onGround(self): #is the player touching a floor (of any platform)	
-		feetOnGround = False
-		if self.rect.bottom < grass1.rect.top and self.rect.colliderect(grass1.rect):
-			feetOnGround = True
-		if self.rect.bottom < grass2.rect.top and self.rect.colliderect(grass2.rect):
-			feetOnGround = True
-		return feetOnGround
 
 	def update(self):
 		if self.Move != 0:
 			self.X += self.Move
-		if self.onGround() == False and self.AllowJump == 0:
+		if self.rect.colliderect(grass1.rect) == False and self.AllowJump == 0:
 			self.Y -= self.Gravity
-		#if (collide(self,grass2) == False and self.AllowJump == 0) or (collide(self,grass1) == False and self.AllowJump == 0):
-		#	self.Y -= self.Gravity
 		if self.AllowJump > 0:
 			self.Y += self.Spring
 			self.AllowJump -= 1
