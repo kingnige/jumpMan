@@ -23,6 +23,7 @@ screen = pygame.display.set_mode((800,600))
 #setup a class to create a PLATFORM sprite
 class grass(pygame.sprite.Sprite):
 	def __init__(self,X,Y):
+		pygame.sprite.Sprite.__init__(self)
 		self.X = X
 		self.Y = Y
 		self.Image = pygame.image.load("grass.png")
@@ -37,6 +38,13 @@ class grass(pygame.sprite.Sprite):
 grass1 = grass(0,500)
 grass2 = grass(400,300)
 
+#create a platform group to hold all of the different platforms
+platforms = pygame.sprite.Group()
+
+#add the GRASS platforms to a group for drawing, updating and collision detection
+platforms.add(grass1)
+platforms.add(grass2)
+
 #setup the initial settings for jumper (and create the JUMPER class)
 class jumper(pygame.sprite.Sprite):
 	def __init__(self):
@@ -47,10 +55,10 @@ class jumper(pygame.sprite.Sprite):
 		self.Speed = 4
 		self.Image = pygame.image.load("baddie.png")
 		self.AllowJump = 0
+		self.JumpHeight = 50
 		self.Spring = -5
 		self.Gravity = -5
-		self.JumpHeight = 50
-		self.Status = "falling"
+
 		self.rect = pygame.Rect(self.Image.get_rect()) #rectangle wrapper for collision detention
 		self.update()
 
@@ -60,7 +68,7 @@ class jumper(pygame.sprite.Sprite):
 			self.Status = "jumping"
 	
 	def jump(self):
-		onFloor() #check if the character is on the floor
+		self.onFloor() #check if the character is on the floor
 		if self.Status == "jumping":
 			self.AllowJump = self.JumpHeight
 
@@ -118,6 +126,11 @@ while 1:
 	
 	#clear the screen (fill with a colour)
 	screen.fill(colour)
+
+	#check for a collision (and change colour if generated list is longer than 0
+	platformCollision = pygame.sprite.spritecollide(jumpMan, platforms, False)
+	if len(platformCollision) > 0:
+		screen.fill(yellow)
 
 	#call the player function to move and generate image, and display the platforms
 	grass1.update()
