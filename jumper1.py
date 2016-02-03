@@ -36,6 +36,7 @@ class grass(pygame.sprite.Sprite):
 #create platforms for the game
 grass1 = grass(0,500)
 grass2 = grass(400,300)
+grass3 = grass(-300,100)
 
 #create a platform group to hold all of the different platforms
 platforms = pygame.sprite.Group()
@@ -43,13 +44,14 @@ platforms = pygame.sprite.Group()
 #add the GRASS platforms to a group for drawing, updating and collision detection
 platforms.add(grass1)
 platforms.add(grass2)
+platforms.add(grass3)
 
 #setup the initial settings for jumper (and create the JUMPER class)
 class jumper(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
 		self.X = 0
-		self.Y = 0
+		self.Y = 450
 		self.Move = 0
 		self.Speed = 4
 		self.Image = pygame.image.load("baddie.png")
@@ -164,6 +166,7 @@ while 1:
 	#call the player function to move and generate image, and display the platforms
 	grass1.update()
 	grass2.update()
+	grass3.update()
 	jumpMan.update()
 
 	#force the game to run at 60 frames per second
