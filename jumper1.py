@@ -15,7 +15,6 @@ pygame.init()
 sound = pygame.mixer.Sound("sound.wav")
 black = (0,0,0)
 yellow = (255,215,0)
-colour = black
 
 #setup the game screen
 screen = pygame.display.set_mode((800,600))
@@ -62,6 +61,13 @@ class jumper(pygame.sprite.Sprite):
 		self.rect = pygame.Rect(self.Image.get_rect()) #rectangle wrapper for collision detention
 		self.update()
 
+	def collision(self):    
+		platformCollision = pygame.sprite.spritecollide(self, platforms, False)
+		if len(platformCollision) > 0:
+			return True #this means that a collision has happened
+		else:
+			return False #this means that there is no collision
+
 
 	def onFloor(self):
 		if self.rect.bottom >= grass1.rect.top: #check if rectangles are touching
@@ -75,11 +81,31 @@ class jumper(pygame.sprite.Sprite):
 	def update(self):
 		if self.Move != 0:
 			self.X += self.Move
-		if self.rect.colliderect(grass1.rect) == False and self.AllowJump == 0:
+		
+
+		#try to move the character, and see if there is a collision. Allow drop if no collision
+		#(first test if jumping before applying gravity
+		if self.AllowJump == 0:
 			self.Y -= self.Gravity
+			self.rect.topleft = self.X, self.Y		#update collision rectangle to new position
+			if self.collision() == True:			#if there is a collision
+				self.Y += self.Gravity			#move the character back upwards
+				self.rect.topleft = self.X, self.Y	#update collision rectangle to original position
+
+		#if self.rect.colliderect(grass1.rect) == False and self.AllowJump == 0:
+		#	self.Y -= self.Gravity
+
+
+
 		if self.AllowJump > 0:
 			self.Y += self.Spring
+			self.rect.topleft = self.X, self.Y		#update collision rectangle to new position
 			self.AllowJump -= 1
+			if self.collision() == True:
+				self.Y -= self.Spring
+				self.rect.topleft = self.X, self.Y	#update collision rectangle to original position
+				self.AllowJump = 0
+
 		#update the player position rectangle
 		self.rect.topleft = self.X, self.Y
 		screen.blit(self.Image,(self.X, self.Y))
@@ -89,6 +115,7 @@ pygame.mouse.set_visible(0)
 
 #use a version of the class JUMPER to create our player JUMPMAN
 jumpMan = jumper()
+
 
 #main game loop (move key pressed to new FUNCTION at a later date)
 while 1:
@@ -125,12 +152,11 @@ while 1:
 			jumpMan.jump()
 	
 	#clear the screen (fill with a colour)
-	screen.fill(colour)
+	screen.fill(black)
 
 	#check for a collision (and change colour if generated list is longer than 0
-	platformCollision = pygame.sprite.spritecollide(jumpMan, platforms, False)
-	if len(platformCollision) > 0:
-		screen.fill(yellow)
+	if jumpMan.collision() == True:
+        	screen.fill(yellow)
 
 	#call the player function to move and generate image, and display the platforms
 	grass1.update()
