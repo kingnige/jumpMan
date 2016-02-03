@@ -57,7 +57,7 @@ class jumper(pygame.sprite.Sprite):
 		self.JumpHeight = 50
 		self.Spring = -5
 		self.Gravity = -5
-
+		self.Status = "falling"
 		self.rect = pygame.Rect(self.Image.get_rect()) #rectangle wrapper for collision detention
 		self.update()
 
@@ -67,30 +67,32 @@ class jumper(pygame.sprite.Sprite):
 			return True #this means that a collision has happened
 		else:
 			return False #this means that there is no collision
-
-
-	def onFloor(self):
-		if self.rect.bottom >= grass1.rect.top: #check if rectangles are touching
-			self.Status = "jumping"
 	
 	def jump(self):
-		self.onFloor() #check if the character is on the floor
-		if self.Status == "jumping":
-			self.AllowJump = self.JumpHeight
+		if self.Status == "onfloor":				#if the player is on the ground
+			self.AllowJump = self.JumpHeight		#allow to jump to current allowed height
+			self.Status = "jumping"				#change the status to jumping
 
 	def update(self):
 		if self.Move != 0:
-			self.X += self.Move
+			self.X += self.Move				#move the player
+			self.rect.topleft = self.X, self.Y		#update the collision rectangle
+			if self.collision() == True:			#see if there has been a collision
+				self.X -= self.Move			#if collision move player back
+				self.AllowJump = 0			#if character was jumping kill jump
+				self.Status = "falling"			#prevent character from jumping (as falling)
+				self.rect.topleft = self.X, self.Y	#update the collision rectangle to original position
 		
 
 		#try to move the character, and see if there is a collision. Allow drop if no collision
-		#(first test if jumping before applying gravity
+		#(first test if jumping before applying gravity)
 		if self.AllowJump == 0:
 			self.Y -= self.Gravity
 			self.rect.topleft = self.X, self.Y		#update collision rectangle to new position
 			if self.collision() == True:			#if there is a collision
 				self.Y += self.Gravity			#move the character back upwards
 				self.rect.topleft = self.X, self.Y	#update collision rectangle to original position
+				self.Status = "onfloor"			#allow the character to jump if needed
 
 		#if self.rect.colliderect(grass1.rect) == False and self.AllowJump == 0:
 		#	self.Y -= self.Gravity
@@ -104,6 +106,7 @@ class jumper(pygame.sprite.Sprite):
 			if self.collision() == True:
 				self.Y -= self.Spring
 				self.rect.topleft = self.X, self.Y	#update collision rectangle to original position
+				self.Status = "falling"			#reset the character to be falling (and not able to jump)
 				self.AllowJump = 0
 
 		#update the player position rectangle
