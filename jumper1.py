@@ -13,7 +13,7 @@ clock = pygame.time.Clock()
 pygame.init()
 
 #setup game variables (load sounds and images, define colours and other information)
-sound = pygame.mixer.Sound("sound.wav")
+sound = pygame.mixer.Sound("coin_flip.wav")
 black = (0,0,0)
 yellow = (255,215,0)
 
@@ -22,7 +22,7 @@ screen = pygame.display.set_mode((800,600))
 
 #setup a class to create a PLATFORM sprite
 class grass(pygame.sprite.Sprite):
-        def __init__(self,X,Y):
+	def __init__(self,X,Y):
                 pygame.sprite.Sprite.__init__(self)
                 self.X = X
                 self.Y = Y
@@ -47,6 +47,7 @@ class wall(pygame.sprite.Sprite):
 
 #create a platform group to hold all of the static platform collision objects
 platforms = pygame.sprite.Group()
+items = pygame.sprite.Group()
 
 #add in the platforms for the level
 with open('level1.csv','rb') as csvFile:
@@ -73,6 +74,28 @@ with open('screenBlock.csv','rb') as csvFile:
         wallItem.append(wall(value1,value2,value3,value4))
         platforms.add(wallItem[currentRow])
         currentRow += 1
+
+#setup a class to create collectable cherrys
+class cherry(pygame.sprite.Sprite):
+	def __init__(self,X,Y):
+        	pygame.sprite.Sprite.__init__(self)
+                self.X = X
+                self.Y = Y
+                self.Image = pygame.image.load('cherry.png')
+                self.rect = pygame.Rect(self.Image.get_rect()) #rectangle wrapper for collision detention
+                self.update()
+
+        def update(self):
+                self.rect.topleft = self.X, self.Y
+                screen.blit(self.Image,(self.X, self.Y))
+
+#create cherries to place in the level to be collected
+cherry1 = cherry(300,480)
+cherry2 = cherry(700,280)
+cherry3 = cherry(200,80)
+items.add(cherry1)
+items.add(cherry2)
+items.add(cherry3)
 
 #setup the initial settings for jumper (and create the JUMPER class)
 class jumper(pygame.sprite.Sprite):
@@ -124,10 +147,12 @@ class jumper(pygame.sprite.Sprite):
                                 self.rect.topleft = self.X, self.Y      #update collision rectangle to original position
                                 self.Status = 'onfloor'                 #allow the character to jump if needed
 
-                #if self.rect.colliderect(grass1.rect) == False and self.AllowJump == 0:
-                #       self.Y -= self.Gravity
-
-
+                #see if the character has collected a cherry, and if so remove the item
+		itemList = len(items)
+		pygame.sprite.spritecollide(self, items, True)
+		itemList2 = len(items)
+		if itemList2 < itemList:
+			sound.play()
 
                 if self.AllowJump > 0:
                         self.Y += self.Spring
@@ -196,6 +221,7 @@ while 1:
 
         #call the player function to move and generate image, and display the platforms
         platforms.update()
+	items.update()
         jumpMan.update()
 
         #force the game to run at 60 frames per second (no faster)
